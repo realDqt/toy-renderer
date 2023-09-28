@@ -1,6 +1,18 @@
-x64/
-.vs/
-Project1.sln
-Project1.vcxproj
-Project1.vcxproj.filters
-Project1.vcxproj.user
+# 忽略生成的文件和目录
+bin/
+obj/
+
+# 忽略 Visual Studio 项目文件
+*.suo
+*.user
+*.sln.cache
+*.suo
+*.user
+*.suo
+*.user
+
+# 忽略临时文件
+[Tt]humbs.db
+[Dd]esktop.ini
+*.log
+*.vscode
