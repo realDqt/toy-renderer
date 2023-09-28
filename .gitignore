@@ -16,3 +16,9 @@ obj/
 [Dd]esktop.ini
 *.log
 *.vscode
+
+x64/
+.vs/
+*.sln
+*.vcxproj
+*.vcxproj.filters
