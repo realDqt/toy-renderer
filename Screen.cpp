@@ -51,9 +51,9 @@ Color Screen::GetPixel(int x, int y)
 {
 	COLORREF tem = getpixel(x, height - y);
 	// ¥”[0, 255]”≥…‰÷¡[0, 1]
-	float r = static_cast<float>(GetRValue(tem) / 255.0);
-	float g = static_cast<float>(GetGValue(tem) / 255.0);
-	float b = static_cast<float>(GetBValue(tem) / 255.0);
+	float r = static_cast<float>(GetRValue(tem) / 255.0f);
+	float g = static_cast<float>(GetGValue(tem) / 255.0f);
+	float b = static_cast<float>(GetBValue(tem) / 255.0f);
 	Color res(r, g, b);
 	return res;
 }
