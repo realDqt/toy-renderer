@@ -39,6 +39,12 @@
     <ClCompile Include="Global.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Mat3.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Mat4.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Screen.h">
@@ -60,6 +66,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Global.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Mat3.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Mat4.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

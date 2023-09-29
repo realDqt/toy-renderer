@@ -52,7 +52,7 @@ void Triangle::SetC(Vec4& C)
 	points[2] = C;
 }
 
-Vec4 Triangle::operator[](int idx)
+Vec4& Triangle::operator[](int idx)
 {
 	return points[idx];
 }

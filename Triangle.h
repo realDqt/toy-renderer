@@ -14,7 +14,7 @@ public:
 	void SetB(Vec4& B);
 	void SetC(Vec4& C);
 	Vec3 Barycentric(Vec2 point);
-	Vec4 operator[](int idx);
+	Vec4& operator[](int idx);
 private:
 	Vec4 points[3];    // 顶点坐标
 	Vec2 texCoords[3]; // 纹理坐标
