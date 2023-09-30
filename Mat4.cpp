@@ -1,5 +1,4 @@
 #include "Mat4.h"
-#include "Mat3.h"
 #include <assert.h>
 
 // 默认构造函数
@@ -27,6 +26,18 @@ Mat4::Mat4(float value)
 	}
 }
 
+// 转换函数
+Mat4::Mat4(const Mat3& rhs)
+{
+	for (int i = 0; i < 3; ++i) {
+		for (int j = 0; j < 3; ++j) {
+			data[i][j] = rhs[i][j];
+		}
+		data[i][3] = data[3][i] = 0.0f;
+	}
+	data[3][3] = 1.0f;
+}
+
 Mat4::~Mat4()
 {
 }
@@ -38,6 +49,7 @@ Mat4& Mat4::operator=(const Mat4& rhs)
 			data[i][j] = rhs[i][j];
 		}
 	}
+	return *this;
 }
 
 std::vector<float>& Mat4::operator[](int idx)

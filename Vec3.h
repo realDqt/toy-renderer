@@ -13,6 +13,8 @@ public:
 	void SetY(float y);
 	void SetZ(float z);
 	Vec3& operator= (const Vec3& rhs); // ¸³ÖµÔËËã·ûÖØÔØ
+	float& operator[](int idx);
+	const float& operator[](int idx)const;
 private:
 	float x, y, z;
 };

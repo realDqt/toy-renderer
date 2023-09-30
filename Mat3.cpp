@@ -26,6 +26,16 @@ Mat3::Mat3(float value)
 	}
 }
 
+// ×ª»»º¯Êý
+Mat3::Mat3(const Mat4& rhs)
+{
+	for (int i = 0; i < 3; ++i) {
+		for (int j = 0; j < 3; ++j) {
+			data[i][j] = rhs[i][j];
+		}
+	}
+}
+
 Mat3::~Mat3()
 {
 }

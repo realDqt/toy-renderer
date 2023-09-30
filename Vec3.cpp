@@ -64,6 +64,20 @@ Vec3& Vec3::operator=(const Vec3& rhs)
 	return *this;
 }
 
+float& Vec3::operator[](int idx)
+{
+	if (idx == 0)return x;
+	else if (idx == 1)return y;
+	else return z;
+}
+
+const float& Vec3::operator[](int idx)const
+{
+	if (idx == 0)return x;
+	else if (idx == 1)return y;
+	else return z;
+}
+
 // 向量加法
 Vec3 operator+(const Vec3& a, const Vec3& b)
 {

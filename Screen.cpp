@@ -87,8 +87,18 @@ void Screen::RasterizeTriangle(Triangle& triangle, Color* pointColors)
 	// 遍历包围盒中的每一个像素
 	for (int x = bboxmin.X(); x <= bboxmax.X(); ++x) {
 		for (int y = bboxmin.Y(); y <= bboxmax.Y(); ++y) {
-			Color color(0.0f, 0.0f, 0.0f, 1.0f);
+			// 深度测试
+			// 计算重心坐标
+			Vec3 bary = triangle.Barycentric(Vec2(x, y));
+			float z = bary.X() * triangle[0].Z() + bary.Y() * triangle[1].Z() + bary.Z() * triangle[2].Z();
+			// 二维坐标转换至一维坐标，注意反转y轴
+			int idx = (height - y) * width + x;
+			if (z > zBuffer[idx])continue;
+			// 更新zBuffer
+			zBuffer[idx] = z;
+
 			// 多重采样抗锯齿
+			Color color(0.0f, 0.0f, 0.0f, 1.0f);
 			for (int i = 0; i < 4; ++i) {
 				// 计算偏移后的坐标
 				float nx = static_cast<float>(x) + offsetX[i];
@@ -103,16 +113,7 @@ void Screen::RasterizeTriangle(Triangle& triangle, Color* pointColors)
 				// 累加至color
 				color = color + 0.25 * sampleColor;
 			}
-			// 计算重心坐标
-			Vec3 bary = triangle.Barycentric(Vec2(x, y));
-			// 深度测试
-			float z = bary.X() * triangle[0].Z() + bary.Y() * triangle[1].Z() + bary.Z() * triangle[2].Z();
-			// 二维坐标转换至一维坐标，注意反转y轴
-			int idx = (height - y) * width + x;
-		    if (z > zBuffer[idx])continue;
 			if(color != Color(0.0f, 0.0f, 0.0f, 1.0f))SetPixel(x, y, color);
-			// 更新zBuffer
-			zBuffer[idx] = z;
 		}
 	}
 }

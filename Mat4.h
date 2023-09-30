@@ -1,10 +1,13 @@
 #pragma once
+#include"Mat3.h"
 #include<vector>
+class Mat3;
 class Mat4 {
 public:
 	Mat4();                // 默认构造函数
 	Mat4(const Mat4& rhs); // 拷贝构造函数
 	Mat4(float value);
+	Mat4(const Mat3& rhs); // 转换函数
 	~Mat4();
 	Mat4& operator= (const Mat4& rhs);
 	std::vector<float>& operator[](int idx);
