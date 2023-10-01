@@ -1,5 +1,6 @@
 #pragma once
 #include "Vec3.h"
+#include "Vec4.h"
 #include "Mat3.h"
 #include "Mat4.h"
 
@@ -41,3 +42,6 @@ Mat4 Ortho(float l, float r, float t, float b, float n, float f);
 
 // Õ∏ ”Õ∂”∞
 Mat4 Perspective(float fov, float ratio, float zNear, float zFar);
+
+// Mat4°¡Vec4
+Vec4 operator* (const Mat4& M, const Vec4& v);

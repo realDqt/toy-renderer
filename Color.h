@@ -18,7 +18,7 @@ public:
 	void SetA(float a);
 	Color& operator=(const Color& rhs);
 private:
-	float r, g, b, a; // 红蓝绿分量及透明度
+	float r, g, b, a;                                 // 红蓝绿分量及透明度
 };
 
 Color operator+(const Color& a, const Color& b);

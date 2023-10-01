@@ -4,11 +4,15 @@
 // 默认构造函数
 Mat3::Mat3()
 {
+	// 初始化容器大小为3
+	for (int i = 0; i < 3; ++i)data[i].resize(3);
 }
 
 // 拷贝构造函数
 Mat3::Mat3(const Mat3& rhs)
 {
+	// 初始化容器大小为3
+	for (int i = 0; i < 3; ++i)data[i].resize(3);
 	for (int i = 0; i < 3; ++i) {
 		for (int j = 0; j < 3; ++j) {
 			data[i][j] = rhs.data[i][j];
@@ -18,6 +22,8 @@ Mat3::Mat3(const Mat3& rhs)
 
 Mat3::Mat3(float value)
 {
+	// 初始化容器大小为3
+	for (int i = 0; i < 3; ++i)data[i].resize(3);
 	for (int i = 0; i < 3; ++i) {
 		for (int j = 0; j < 3; ++j) {
 			if (i == j)data[i][j] = value;
@@ -29,6 +35,8 @@ Mat3::Mat3(float value)
 // 转换函数
 Mat3::Mat3(const Mat4& rhs)
 {
+	// 初始化容器大小为3
+	for (int i = 0; i < 3; ++i)data[i].resize(3);
 	for (int i = 0; i < 3; ++i) {
 		for (int j = 0; j < 3; ++j) {
 			data[i][j] = rhs[i][j];

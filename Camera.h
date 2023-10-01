@@ -17,11 +17,11 @@ private:
 	void ProcessKeyboard(ExMessage* msg, float deltaTime);                      // 处理键盘按下
 	void ProcessMouseMovement(float xOffset, float yOffset);                    // 处理鼠标移动
 
-	Vec3 position; // 摄像机位置
-	Vec3 front;    // 摄像机前方
-	Vec3 up;       // 摄像机上方
-	Vec3 right;    // 摄像机右方
-	Vec3 worldUp;  // 世界上方
-	float yaw;     // 偏航角
-	float pitch;   // 俯仰角
+	Vec3 position;                                                              // 摄像机位置
+	Vec3 front;                                                                 // 摄像机前方
+	Vec3 up;                                                                    // 摄像机上方
+	Vec3 right;                                                                 // 摄像机右方
+	Vec3 worldUp;                                                               // 世界上方
+	float yaw;                                                                  // 偏航角
+	float pitch;                                                                // 俯仰角
 };

@@ -50,7 +50,7 @@ bool FloatEqual(float a, float b)
 Mat4 Translate(const Vec3& translate)
 {
 	Mat4 res(1.0f);
-	for (int i = 0; i < 3; ++i)res[i][3] = -translate[i];
+	for (int i = 0; i < 3; ++i)res[i][3] = translate[i];
 	return res;
 }
 
@@ -124,5 +124,19 @@ Mat4 Perspective(float fov, float ratio, float zNear, float zFar)
 	Mp2o[2][3] = -n * f;
 	Mp2o[3][2] = 1.0f;
 
-	return Mp2o * Ortho(l, r, t, b, n, f);
+	return Ortho(l, r, t, b, n, f) * Mp2o;
+}
+
+// Mat4¡ÁVec4
+Vec4 operator* (const Mat4& M, const Vec4& v)
+{
+	Vec4 res(1.0f);
+	for (int i = 0; i < 4; ++i) {
+		float sum = 0;
+		for (int j = 0; j < 4; ++j) {
+			sum += M[i][j] * v[j];
+		}
+		res[i] = sum;
+	}
+	return res;
 }

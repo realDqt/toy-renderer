@@ -78,6 +78,29 @@ Vec4& Vec4::operator=(const Vec4& rhs)
 	return *this;
 }
 
+float& Vec4::operator[](int idx)
+{
+	if (idx == 0)return x;
+	else if (idx == 1)return y;
+	else if (idx == 2)return z;
+	else return w;
+}
+
+const float& Vec4::operator[](int idx)const
+{
+	if (idx == 0)return x;
+	else if (idx == 1)return y;
+	else if (idx == 2)return z;
+	else return w;
+}
+
+// 输出运算符重载
+std::ostream& operator<<(std::ostream& out, const Vec4& v)
+{
+	out << v[0] << " " << v[1] << " " << v[2] << " " << v[3];
+	return out;
+}
+
 // 向量加法
 Vec4 operator+(const Vec4& a, const Vec4& b)
 {

@@ -4,11 +4,15 @@
 // 默认构造函数
 Mat4::Mat4()
 {
+	// 初始化容器大小为4
+	for (int i = 0; i < 4; ++i)data[i].resize(4);
 }
 
 // 拷贝构造函数
 Mat4::Mat4(const Mat4& rhs)
 {
+	// 初始化容器大小为4
+	for (int i = 0; i < 4; ++i)data[i].resize(4);
 	for (int i = 0; i < 4; ++i) {
 		for (int j = 0; j < 4; ++j) {
 			data[i][j] = rhs.data[i][j];
@@ -18,6 +22,8 @@ Mat4::Mat4(const Mat4& rhs)
 
 Mat4::Mat4(float value)
 {
+	// 初始化容器大小为4
+	for (int i = 0; i < 4; ++i)data[i].resize(4);
 	for (int i = 0; i < 4; ++i) {
 		for (int j = 0; j < 4; ++j) {
 			if (i == j)data[i][j] = value;
@@ -29,6 +35,8 @@ Mat4::Mat4(float value)
 // 转换函数
 Mat4::Mat4(const Mat3& rhs)
 {
+	// 初始化容器大小为4
+	for (int i = 0; i < 4; ++i)data[i].resize(4);
 	for (int i = 0; i < 3; ++i) {
 		for (int j = 0; j < 3; ++j) {
 			data[i][j] = rhs[i][j];

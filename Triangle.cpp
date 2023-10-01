@@ -1,4 +1,7 @@
 #include "Triangle.h"
+#include "Global.h"
+#include <assert.h>
+#include <iostream>
 
 // 默认构造函数
 Triangle::Triangle()
@@ -57,6 +60,11 @@ Vec4& Triangle::operator[](int idx)
 	return points[idx];
 }
 
+const Vec4& Triangle::operator[](int idx)const
+{
+	return points[idx];
+}
+
 Vec3 Triangle::Barycentric(Vec2 point)
 {
 	// 归一化齐次分量
@@ -77,4 +85,28 @@ Vec3 Triangle::Barycentric(Vec2 point)
 	float gamma = 1 - alpha - beta;
 
 	return Vec3(alpha, beta, gamma);
+}
+
+// 完成MVP变换、透视除法和视口变换
+void Triangle::Transform(const Mat4& mvp, int width, int height, int depth, bool print)
+{
+	// mvp变换
+	for (int i = 0; i < 3; ++i) {
+		points[i] = mvp * points[i];
+	}
+
+	// 透视除法
+	for (int i = 0; i < 3; ++i) {
+		assert(!FloatEqual(points[i].W(), 0.0f));
+		points[i] = points[i] / points[i].W();
+		if(print)std::cout << points[i] << std::endl;
+	}
+
+	// 视口变换
+	Vec3 scale(width / 2.0f, height / 2.0f, depth / 2.0f);
+	Vec3 translate(width / 2.0f, height / 2.0f, -depth / 2.0f);
+	Mat4 viewport = Translate(translate) * Scale(scale);
+	for (int i = 0; i < 3; ++i) {
+		points[i] = viewport * points[i];
+	}
 }

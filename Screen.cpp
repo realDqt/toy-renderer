@@ -2,6 +2,7 @@
 #include "Global.h"
 #include <cstring>
 #include <algorithm>
+#include <iostream>
 Screen::Screen(int width, int height, int depth, Color bgColor)
 {
 	this->width = width;
@@ -71,9 +72,13 @@ void Screen::SetPixel(int x, int y, Color color)
 // 光栅化三角形，三角形的顶点坐标是屏幕坐标
 void Screen::RasterizeTriangle(Triangle& triangle, Color* pointColors)
 {
+	// 若三角形不在屏幕内部，放弃绘制
+	if (!InScreen(triangle))return;
+	std::cout << "In Screen!" << std::endl;
 	// 计算三角形包围盒
 	Vec2 bboxmin(static_cast<float>(width), static_cast<float>(height));
 	Vec2 bboxmax(0.0f, 0.0f);
+	//std::cout << "width = " << width << " " << "height = " << height << std::endl;
 	for (int i = 0; i < 3; ++i) {
 		bboxmin.SetX(std::min(bboxmin.X(), triangle[i].X()));
 		bboxmin.SetY(std::min(bboxmin.Y(), triangle[i].Y()));
@@ -81,6 +86,8 @@ void Screen::RasterizeTriangle(Triangle& triangle, Color* pointColors)
 		bboxmax.SetX(std::max(bboxmax.X(), triangle[i].X()));
 		bboxmax.SetY(std::max(bboxmax.Y(), triangle[i].Y()));
 	}
+	std::cout << bboxmin.X() << " " << bboxmin.Y() << std::endl;
+	std::cout << bboxmax.X() << " " << bboxmax.Y() << std::endl;
 	// 偏移量数组
 	float offsetX[4] = { -0.25f, 0.25f, 0.25f, -0.25f };
 	float offsetY[4] = { 0.25f, 0.25f, -0.25f, -0.25f };
@@ -116,4 +123,15 @@ void Screen::RasterizeTriangle(Triangle& triangle, Color* pointColors)
 			if(color != Color(0.0f, 0.0f, 0.0f, 1.0f))SetPixel(x, y, color);
 		}
 	}
+}
+
+// 判断三角形是否在屏幕内
+bool Screen::InScreen(Triangle& triangle)
+{
+	for (int i = 0; i < 3; ++i) {
+		if (!InRange(triangle[i][0], 0.0f, width))return false;
+		if (!InRange(triangle[i][1], 0.0f, height))return false;
+		if (!InRange(triangle[i][2], -depth, 0.0f))return false;
+	}
+	return true;
 }
