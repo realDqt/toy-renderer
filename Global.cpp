@@ -128,7 +128,7 @@ Mat4 Perspective(float fov, float ratio, float zNear, float zFar)
 }
 
 // Mat4¡ÁVec4
-Vec4 operator* (const Mat4& M, const Vec4& v)
+Vec4 operator*(const Mat4& M, const Vec4& v)
 {
 	Vec4 res(1.0f);
 	for (int i = 0; i < 4; ++i) {

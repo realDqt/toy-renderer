@@ -1,6 +1,6 @@
 #pragma once
 #include "Mat4.h"
-#include<vector>
+#include <vector>
 class Mat4;
 class Mat3 {
 public:

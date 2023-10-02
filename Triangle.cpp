@@ -108,5 +108,6 @@ void Triangle::Transform(const Mat4& mvp, int width, int height, int depth, bool
 	Mat4 viewport = Translate(translate) * Scale(scale);
 	for (int i = 0; i < 3; ++i) {
 		points[i] = viewport * points[i];
+		if (print)std::cout << points[i] << std::endl;
 	}
 }

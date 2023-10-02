@@ -9,7 +9,7 @@ public:
 	Camera();                                                                   // 默认构造函数
 	Camera(const Vec3& position, const Vec3& worldUp, float yaw, float pitch);
 	~Camera();
-	Mat4 GetViewMatrix();
+	Mat4 GetViewMatrix(bool print = false);
 	void Listen(ExMessage* msg, float deltaTime, float xOffset, float yOffset); // 监听外部事件
 private:
 	Mat4 LookAt(const Vec3& position, const Vec3& center, const Vec3& worldUp); // 计算view矩阵

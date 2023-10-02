@@ -1,3 +1,4 @@
+#include <iostream>
 #pragma once
 class Vec3 {
 public:
@@ -23,4 +24,5 @@ Vec3 operator+(const Vec3& a, const Vec3& b); // 向量加法
 Vec3 operator-(const Vec3& a, const Vec3& b); // 向量减法
 Vec3 operator*(float k, const Vec3& v);       // 向量数乘
 Vec3 operator/(const Vec3& v, float k);       // 向量数除
+std::ostream& operator<<(std::ostream& out, const Vec3& v);
 

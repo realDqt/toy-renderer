@@ -1,6 +1,7 @@
 #pragma once
-#include"Mat3.h"
-#include<vector>
+#include "Mat3.h"
+#include <vector>
+#include <iostream>
 class Mat3;
 class Mat4 {
 public:
@@ -23,5 +24,6 @@ Mat4 operator*(const Mat4& a, const Mat4& b); // ¾ØÕó³Ë·¨
 Mat4 operator+(const Mat4& a, const Mat4& b); // ¾ØÕó¼Ó·¨
 Mat4 operator*(float k, const Mat4& M);       // ¾ØÕóÊı³Ë
 Mat4 operator/(const Mat4& M, float k);       // ¾ØÕóÊı³ı
+std::ostream& operator<<(std::ostream& out, const Mat4& M);
 
 #pragma once

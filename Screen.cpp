@@ -78,7 +78,6 @@ void Screen::RasterizeTriangle(Triangle& triangle, Color* pointColors)
 	// 计算三角形包围盒
 	Vec2 bboxmin(static_cast<float>(width), static_cast<float>(height));
 	Vec2 bboxmax(0.0f, 0.0f);
-	//std::cout << "width = " << width << " " << "height = " << height << std::endl;
 	for (int i = 0; i < 3; ++i) {
 		bboxmin.SetX(std::min(bboxmin.X(), triangle[i].X()));
 		bboxmin.SetY(std::min(bboxmin.Y(), triangle[i].Y()));
@@ -86,8 +85,8 @@ void Screen::RasterizeTriangle(Triangle& triangle, Color* pointColors)
 		bboxmax.SetX(std::max(bboxmax.X(), triangle[i].X()));
 		bboxmax.SetY(std::max(bboxmax.Y(), triangle[i].Y()));
 	}
-	std::cout << bboxmin.X() << " " << bboxmin.Y() << std::endl;
-	std::cout << bboxmax.X() << " " << bboxmax.Y() << std::endl;
+	std::cout << "minx: " << bboxmin.X() << " miny: " << bboxmin.Y() << std::endl;
+	std::cout << "maxx: " << bboxmax.X() << " maxy: " << bboxmax.Y() << std::endl;
 	// 偏移量数组
 	float offsetX[4] = { -0.25f, 0.25f, 0.25f, -0.25f };
 	float offsetY[4] = { 0.25f, 0.25f, -0.25f, -0.25f };

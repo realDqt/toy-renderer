@@ -180,3 +180,14 @@ Mat4 operator/(const Mat4& M, float k)
 	Mat4 res = 1.0 / k * M;
 	return res;
 }
+
+std::ostream& operator<<(std::ostream & out, const Mat4 & M)
+{
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; ++j) {
+			out << M[i][j] << " ";
+		}
+		if(i != 3)out << std::endl;
+	}
+	return out;
+}

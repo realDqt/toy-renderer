@@ -102,3 +102,9 @@ Vec3 operator/(const Vec3& v, float k)
 	Vec3 res(v.X() / k, v.Y() / k, v.Z() / k);
 	return res;
 }
+
+std::ostream& operator<<(std::ostream& out, const Vec3& v)
+{
+	out << v.X() << " " << v.Y() << " " << v.Z();
+	return out;
+}
