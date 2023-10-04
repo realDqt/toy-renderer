@@ -90,7 +90,7 @@ void Camera::ProcessKeyboard(ExMessage* msg, float deltaTime)
 {
 	if (peekmessage(msg, EX_KEY)) {
 		std::cout << "Key is pressed!" << std::endl;
-		float distance = 2.5f * deltaTime;
+		float distance = 0.25f * deltaTime;
 		switch(msg->vkcode) {
 		case 0x57:
 			// 按下W
@@ -135,6 +135,6 @@ void Camera::ProcessMouseMovement(float xOffset, float yOffset)
 // 监听外部事件
 void Camera::Listen(ExMessage* msg, float deltaTime, float xOffset, float yOffset)
 {
-	ProcessKeyboard(msg, deltaTime);
 	ProcessMouseMovement(xOffset, yOffset);
+	ProcessKeyboard(msg, deltaTime);
 }

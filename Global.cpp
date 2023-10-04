@@ -124,7 +124,7 @@ Mat4 Perspective(float fov, float ratio, float zNear, float zFar)
 	Mp2o[2][3] = -n * f;
 	Mp2o[3][2] = 1.0f;
 
-	return Ortho(l, r, t, b, n, f) * Mp2o;
+	return Mp2o;
 }
 
 // Mat4¡ÁVec4

@@ -13,6 +13,7 @@ Triangle::Triangle(Triangle& rhs)
 {
 	for (int i = 0; i < 3; ++i) {
 		this->points[i] = rhs.points[i];
+		this->oriPoints[i] = rhs.oriPoints[i];
 		this->texCoords[i] = rhs.texCoords[i];
 	}
 }
@@ -20,7 +21,7 @@ Triangle::Triangle(Triangle& rhs)
 Triangle::Triangle(Vec4* points, Vec2* texCoors)
 {
 	for (int i = 0; i < 3; ++i) {
-		if(points)this->points[i] = points[i];
+		if(points)this->oriPoints[i] = this->points[i] = points[i];
 		if(texCoords)this->texCoords[i] = texCoords[i];
 	}
 }
@@ -91,23 +92,34 @@ Vec3 Triangle::Barycentric(Vec2 point)
 void Triangle::Transform(const Mat4& mvp, int width, int height, int depth, bool print)
 {
 	// mvp变换
+	if (print)std::cout << "after mvp: " << std::endl;
 	for (int i = 0; i < 3; ++i) {
-		points[i] = mvp * points[i];
+		points[i] = mvp * oriPoints[i];
+		// 透视除法
+		//points[i] = points[i] / points[i].W();
+		if (print)std::cout << points[i] << std::endl;
 	}
+	if (print)std::cout << std::endl;
 
+	
 	// 透视除法
+	if (print)std::cout << "after perspective divide: " << std::endl;
 	for (int i = 0; i < 3; ++i) {
 		assert(!FloatEqual(points[i].W(), 0.0f));
 		points[i] = points[i] / points[i].W();
 		if(print)std::cout << points[i] << std::endl;
 	}
+	if(print)std::cout << std::endl;
+	
 
 	// 视口变换
 	Vec3 scale(width / 2.0f, height / 2.0f, depth / 2.0f);
 	Vec3 translate(width / 2.0f, height / 2.0f, -depth / 2.0f);
 	Mat4 viewport = Translate(translate) * Scale(scale);
+	if(print)std::cout << "after viewport transform: " << std::endl;
 	for (int i = 0; i < 3; ++i) {
 		points[i] = viewport * points[i];
 		if (print)std::cout << points[i] << std::endl;
 	}
+	if(print)std::cout << std::endl;
 }

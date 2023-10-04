@@ -4,7 +4,7 @@
 #include "Mat3.h"
 #include "Mat4.h"
 
-const int INF = 0X3f3f3f3f;
+const float INF = 3.40282e+38;
 const float PI = 3.1415926f;
 
 // 判断k是否属于区间[min, max]
