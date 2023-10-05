@@ -53,6 +53,18 @@ Vec2& Vec2::operator=(const Vec2& rhs)
 	return *this;
 }
 
+float& Vec2::operator[](int idx)
+{
+	if (idx == 0)return x;
+	else return y;
+}
+
+const float& Vec2::operator[](int idx)const
+{
+	if (idx == 0)return x;
+	else return y;
+}
+
 // 向量加法
 Vec2 operator+(const Vec2& a, const Vec2& b)
 {

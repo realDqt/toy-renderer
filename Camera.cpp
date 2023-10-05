@@ -90,7 +90,7 @@ void Camera::ProcessKeyboard(ExMessage* msg, float deltaTime)
 {
 	if (peekmessage(msg, EX_KEY)) {
 		std::cout << "Key is pressed!" << std::endl;
-		float distance = 0.25f * deltaTime;
+		float distance = 0.125f * deltaTime;
 		switch(msg->vkcode) {
 		case 0x57:
 			// °´ÏÂW
@@ -115,6 +115,7 @@ void Camera::ProcessKeyboard(ExMessage* msg, float deltaTime)
 		default:
 			break;
 		}
+		UpdateCameraVectors();
 	}
 }
 

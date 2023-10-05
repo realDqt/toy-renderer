@@ -74,9 +74,9 @@ void Screen::RasterizeTriangle(Triangle& triangle, Color* pointColors)
 {
 	// 若三角形不在屏幕内部，放弃绘制
 	if (!InScreen(triangle))return;
-	std::cout << "In Screen!" << std::endl;
-	for (int i = 0; i < 3; ++i)std::cout << triangle[i] << std::endl;
-	std::cout << std::endl;
+	//std::cout << "In Screen!" << std::endl;
+	//for (int i = 0; i < 3; ++i)std::cout << triangle[i] << std::endl;
+	//std::cout << std::endl;
 	// 计算三角形包围盒
 	Vec2 bboxmin(INF, INF);
 	Vec2 bboxmax(-INF, -INF);
@@ -180,6 +180,78 @@ bool Screen::InScreen(Triangle& triangle)
 		//if (!InRange(triangle[i][2], -depth, 0.0f))return false;
 	}
 	return true;
+}
+
+// 绘制模型
+void Screen::RenderModel(const Mat4& mvp, Model& model)
+{
+	int nFaces = model.NumOfFaces();
+	for (int i = 0; i < nFaces; ++i) {
+		// 构造三角形
+		Vec4* points = new Vec4[3];
+		Vec2* texCoords = new Vec2[3];
+		for (int j = 0; j < 3; ++j) {
+			Vec3 idx = model.Vertex(i, j);
+			for (int k = 0; k < 3; ++k)points[j][k] = model.Vertex(idx[0])[k];
+			points[j][3] = 1.0f;
+			texCoords[j] = model.TexCoord(idx[1]);
+		}
+		Triangle triangle(points, texCoords);
+
+		// 坐标变换
+		triangle.Transform(mvp, width, height, depth);
+
+		// 光栅化
+		Color* pointColors = new Color[3];
+		for (int j = 0; j < 3; ++j)pointColors[j] = Color(0.0f, 0.0f, 0.0f);
+		RasterizeTriangle(triangle, pointColors);
+
+		// 释放内存
+		delete[] points;
+		delete[] texCoords;
+		delete[] pointColors;
+	}
+}
+
+// 绘制原始模型
+void Screen::RenderModel(Model& model)
+{
+	int nFaces = model.NumOfFaces();
+	int nVertices = model.NumOfVertices();
+
+	float xl = INF, xr = -INF, yl = INF, yr = -INF;
+	for (int i = 0; i < nVertices; ++i) {
+		xl = std::min(xl, model.Vertex(i)[0]);
+		xr = std::max(xr, model.Vertex(i)[0]);
+		yl = std::min(yl, model.Vertex(i)[1]);
+		yr = std::max(yr, model.Vertex(i)[1]);
+	}
+
+	for (int i = 0; i < nFaces; ++i) {
+		// 构造三角形
+		Vec4* points = new Vec4[3];
+		Vec2* texCoords = new Vec2[3];
+		for (int j = 0; j < 3; ++j) {
+			Vec3 idx = model.Vertex(i, j);
+			for (int k = 0; k < 3; ++k)points[j][k] = model.Vertex(idx[0])[k];
+			// 映射至屏幕坐标
+			points[j][0] = (points[j][0] - xl) / (xr - xl) * width;
+			points[j][1] = (points[j][1] - yl) / (yr - yl) * height;
+			points[j][3] = 1.0f;
+			texCoords[j] = model.TexCoord(idx[1]);
+		}
+		Triangle triangle(points, texCoords);
+
+		// 光栅化
+		Color* pointColors = new Color[3];
+		for (int j = 0; j < 3; ++j)pointColors[j] = Color(0.0f, 0.0f, 0.0f);
+		RasterizeTriangle(triangle, pointColors);
+
+		// 释放内存
+		delete[] points;
+		delete[] texCoords;
+		delete[] pointColors;
+	}
 }
 
 // 清理zBuffer

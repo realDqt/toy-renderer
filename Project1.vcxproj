@@ -134,6 +134,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mat3.cpp" />
     <ClCompile Include="Mat4.cpp" />
+    <ClCompile Include="Model.cpp" />
     <ClCompile Include="Screen.cpp" />
     <ClCompile Include="Triangle.cpp" />
     <ClCompile Include="Vec2.cpp" />
@@ -146,6 +147,7 @@
     <ClInclude Include="Global.h" />
     <ClInclude Include="Mat3.h" />
     <ClInclude Include="Mat4.h" />
+    <ClInclude Include="Model.h" />
     <ClInclude Include="Screen.h" />
     <ClInclude Include="Triangle.h" />
     <ClInclude Include="Vec2.h" />

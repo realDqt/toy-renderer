@@ -95,8 +95,6 @@ void Triangle::Transform(const Mat4& mvp, int width, int height, int depth, bool
 	if (print)std::cout << "after mvp: " << std::endl;
 	for (int i = 0; i < 3; ++i) {
 		points[i] = mvp * oriPoints[i];
-		// 透视除法
-		//points[i] = points[i] / points[i].W();
 		if (print)std::cout << points[i] << std::endl;
 	}
 	if (print)std::cout << std::endl;
@@ -105,7 +103,7 @@ void Triangle::Transform(const Mat4& mvp, int width, int height, int depth, bool
 	// 透视除法
 	if (print)std::cout << "after perspective divide: " << std::endl;
 	for (int i = 0; i < 3; ++i) {
-		assert(!FloatEqual(points[i].W(), 0.0f));
+		//assert(!FloatEqual(points[i].W(), 0.0f));
 		points[i] = points[i] / points[i].W();
 		if(print)std::cout << points[i] << std::endl;
 	}

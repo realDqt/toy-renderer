@@ -2,6 +2,7 @@
 #define NOMINMAX
 #include "Color.h"
 #include "Triangle.h"
+#include "Model.h"
 #include <easyx.h>
 class Screen {
 public:
@@ -15,6 +16,8 @@ public:
 	void SetPixel(int x, int y, Color color);                           // 将指定位置设置为指定颜色
 	void RasterizeTriangle(Triangle& triangle, Color* pointColors);     // 光栅化三角形，三角形的顶点坐标是屏幕坐标
 	void RasterizeTriangleMSAA(Triangle& triangle, Color* pointColors); // MSAA
+	void RenderModel(const Mat4& mvp, Model& model);                    // 绘制模型
+	void RenderModel(Model& model);                                     // 绘制原始模型
 	void ClearZ();                                                      // 清理zBuffer
 private:
 	bool InScreen(Triangle& triangle);                                  // 判断三角形是否在屏幕内

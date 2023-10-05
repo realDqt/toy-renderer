@@ -11,6 +11,8 @@ public:
 	void SetX(float x);
 	void SetY(float y);
 	Vec2& operator= (const Vec2& rhs);        // ¸³ÖµÔËËã·ûÖØÔØ
+	float& operator[](int idx);
+	const float& operator[](int idx)const;
 private:
 	float x, y;
 };
