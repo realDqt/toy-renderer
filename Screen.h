@@ -16,7 +16,8 @@ public:
 	void SetPixel(int x, int y, Color color);                           // 将指定位置设置为指定颜色
 	void RasterizeTriangle(Triangle& triangle, Color* pointColors);     // 光栅化三角形，三角形的顶点坐标是屏幕坐标
 	void RasterizeTriangleMSAA(Triangle& triangle, Color* pointColors); // MSAA
-	void RenderModel(const Mat4& mvp, Model& model);                    // 绘制模型
+	void RasterizeTriangle(const Mat4& normalMatrix, Image* diffuseMap, Triangle& triangle, const Vec3& lightPos, const Vec3& viewPos);  // 光栅化三角形，正式进行光照计算
+	void RenderModel(const Mat4& m, const Mat4& mvp, Model& model, const Vec3& lightPos, const Vec3& viewPos);                           // 绘制模型
 	void RenderModel(Model& model);                                     // 绘制原始模型
 	void ClearZ();                                                      // 清理zBuffer
 private:

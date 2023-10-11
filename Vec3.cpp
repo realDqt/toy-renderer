@@ -6,6 +6,14 @@ Vec3::Vec3()
 	this->x = this->y = this->z = 0.0f;
 }
 
+// ×ª»»º¯Êý
+Vec3::Vec3(const Vec4& rhs)
+{
+	this->x = rhs.X();
+	this->y = rhs.Y();
+	this->z = rhs.Z();
+}
+
 Vec3::Vec3(float x, float y, float z)
 {
 	this->x = x;

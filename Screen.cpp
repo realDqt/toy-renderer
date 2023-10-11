@@ -119,9 +119,9 @@ void Screen::RasterizeTriangleMSAA(Triangle& triangle, Color* pointColors)
 {
 	// 若三角形不在屏幕内部，放弃绘制
 	if (!InScreen(triangle))return;
-	std::cout << "In Screen!" << std::endl;
-	for (int i = 0; i < 3; ++i)std::cout << triangle[i] << std::endl;
-	std::cout << std::endl;
+	//std::cout << "In Screen!" << std::endl;
+	//for (int i = 0; i < 3; ++i)std::cout << triangle[i] << std::endl;
+	//std::cout << std::endl;
 	// 计算三角形包围盒
 	Vec2 bboxmin(INF, INF);
 	Vec2 bboxmax(-INF, -INF);
@@ -171,45 +171,87 @@ void Screen::RasterizeTriangleMSAA(Triangle& triangle, Color* pointColors)
 	}
 }
 
+// 光栅化三角形，正式进行光照计算
+void Screen::RasterizeTriangle(const Mat4& normalMatrix, Image* diffuseMap, Triangle& triangle, const Vec3& lightPos, const Vec3& viewPos)
+{
+	// 计算三角形包围盒
+	Vec2 bboxmin(INF, INF);
+	Vec2 bboxmax(-INF, -INF);
+	for (int i = 0; i < 3; ++i) {
+		bboxmin.SetX(std::min(bboxmin.X(), triangle[i].X()));
+		bboxmin.SetY(std::min(bboxmin.Y(), triangle[i].Y()));
+
+		bboxmax.SetX(std::max(bboxmax.X(), triangle[i].X()));
+		bboxmax.SetY(std::max(bboxmax.Y(), triangle[i].Y()));
+	}
+
+	for (int x = bboxmin.X(); x < bboxmax.X(); ++x) {
+		for (int y = bboxmin.Y(); y < bboxmax.Y(); ++y) {
+			// 计算重心坐标
+			Vec3 bary = triangle.Barycentric(Vec2(x, y));
+			// 判断是否在三角形内部
+			if (!InRange(bary.X(), 0.0f, 1.0f) || !InRange(bary.Y(), 0.0f, 1.0f) || !InRange(bary.Z(), 0.0f, 1.0f))
+				continue;
+			// 深度测试
+			float z = bary.X() * triangle[0].Z() + bary.Y() * triangle[1].Z() + bary.Z() * triangle[2].Z();
+			int idx = (height - y) * width + x;
+			if (z > zBuffer[idx])continue;
+			// 更新zBuffer
+			zBuffer[idx] = z;
+			// 光照计算
+			Color color = BlinPhong(normalMatrix, diffuseMap, triangle, bary, lightPos, viewPos);
+			// 着色
+			SetPixel(x, y, color);
+		}
+	}
+}
+
 // 判断三角形是否在屏幕内
 bool Screen::InScreen(Triangle& triangle)
 {
 	for (int i = 0; i < 3; ++i) {
 		if (!InRange(triangle[i][0], 0.0f, width))return false;
 		if (!InRange(triangle[i][1], 0.0f, height))return false;
-		//if (!InRange(triangle[i][2], -depth, 0.0f))return false;
+		if (!InRange(triangle[i][2], -depth, 0.0f))return false;
 	}
 	return true;
 }
 
 // 绘制模型
-void Screen::RenderModel(const Mat4& mvp, Model& model)
+void Screen::RenderModel(const Mat4& m, const Mat4& mvp, Model& model, const Vec3& lightPos, const Vec3& viewPos)
 {
 	int nFaces = model.NumOfFaces();
+	Image* diffuseMap = model.GetDiffuseMap();
+	Mat4 normalMatrix = m.Inverse().Transpose();
 	for (int i = 0; i < nFaces; ++i) {
 		// 构造三角形
 		Vec4* points = new Vec4[3];
 		Vec2* texCoords = new Vec2[3];
+		Vec3* normals = new Vec3[3];
 		for (int j = 0; j < 3; ++j) {
 			Vec3 idx = model.Vertex(i, j);
 			for (int k = 0; k < 3; ++k)points[j][k] = model.Vertex(idx[0])[k];
 			points[j][3] = 1.0f;
 			texCoords[j] = model.TexCoord(idx[1]);
+			//std::cout << "RenderModel texCoords: " << std::endl;
+			//std::cout << texCoords[j] << std::endl;
+			normals[j] = model.Normal(idx[2]);
+			//std::cout << "RenderModel normals: " << std::endl;
+			//std::cout << normals[j] << std::endl;
 		}
-		Triangle triangle(points, texCoords);
-
+		Triangle triangle(points, texCoords, normals);
+		triangle.CalcWorldPoints(m);
+		
 		// 坐标变换
 		triangle.Transform(mvp, width, height, depth);
 
 		// 光栅化
-		Color* pointColors = new Color[3];
-		for (int j = 0; j < 3; ++j)pointColors[j] = Color(0.0f, 0.0f, 0.0f);
-		RasterizeTriangle(triangle, pointColors);
+		RasterizeTriangle(normalMatrix, diffuseMap, triangle, lightPos, viewPos);
 
 		// 释放内存
 		delete[] points;
 		delete[] texCoords;
-		delete[] pointColors;
+		delete[] normals;
 	}
 }
 
@@ -234,17 +276,19 @@ void Screen::RenderModel(Model& model)
 		for (int j = 0; j < 3; ++j) {
 			Vec3 idx = model.Vertex(i, j);
 			for (int k = 0; k < 3; ++k)points[j][k] = model.Vertex(idx[0])[k];
+			points[j][3] = 1.0f;
 			// 映射至屏幕坐标
 			points[j][0] = (points[j][0] - xl) / (xr - xl) * width;
 			points[j][1] = (points[j][1] - yl) / (yr - yl) * height;
-			points[j][3] = 1.0f;
 			texCoords[j] = model.TexCoord(idx[1]);
 		}
 		Triangle triangle(points, texCoords);
 
 		// 光栅化
 		Color* pointColors = new Color[3];
-		for (int j = 0; j < 3; ++j)pointColors[j] = Color(0.0f, 0.0f, 0.0f);
+		for (int j = 0; j < 3; ++j) {
+			pointColors[j] = model.GetDiffuseMap()->GetPixel(texCoords[j]);
+		}
 		RasterizeTriangle(triangle, pointColors);
 
 		// 释放内存

@@ -52,6 +52,12 @@ float Vec4::W()const
 	return w;
 }
 
+// 获取xyz分量构成的Vec3
+Vec3 Vec4::XYZ()const
+{
+	return Vec3(x, y, z);
+}
+
 void Vec4::SetX(float x)
 {
 	this->x = x;

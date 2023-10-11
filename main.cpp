@@ -3,6 +3,7 @@
 #include "Mat4.h"
 #include "Global.h"
 #include "Model.h"
+#include "Image.h"
 #include <iostream>
 #include <conio.h>
 
@@ -18,6 +19,9 @@ const Vec3 worldUp(0.0f, 1.0f, 0.0f);  // 世界上方
 float yaw = -90.0f;                    // 偏航角
 float pitch = 0.0f;                    // 俯仰角
 
+const Vec3 lightPos(1.0f, 1.0f, 1.0f); // 光源位置
+const Vec3 viewPos(0.0f, 0.0f, 0.0f);  // 观察位置
+
 int main()
 {
 	// 创建屏幕
@@ -29,15 +33,14 @@ int main()
 	std::cout << std::endl;
 
 	// 加载模型
-	const char* filePath = "E:/toyRenderer/models/source/Aiz_v1.0_2.79.obj";
+	const char* filePath = "../models/source/Aiz_v1.0_2.79.obj";
 	Model myModel(filePath);
 
 	// 计算model矩阵
-	Vec3 translate(100.0f, 0.0f, 0.0f);
-	Vec3 n(0.0f, 0.0f, 1.0f);
-	Vec3 scale(200.0f, 200.0f, 200.0f);
-	Mat4 model = Translate(translate) * Scale(scale);
-	model = Mat4(1.0f);
+	Vec3 translate(0.0f, -0.8f, -1.5f);
+	Vec3 nx(1.0f, 0.0f, 0.0f), ny(0.0f, 1.0f, 0.0f), nz(0.0f, 0.0f, 1.0f);
+	Vec3 scale(1.0f, 1.0f, 1.0f);
+	Mat4 model = Translate(translate) * model;
 
 	// 计算projection矩阵
 	float fov = Radians(90.0f);
@@ -55,7 +58,9 @@ int main()
 	lastY = msg->y;
 	bool first = true;
 
+	
 	BeginBatchDraw();
+	
 	// 渲染循环
 	while (1) {
 		cleardevice();
@@ -76,16 +81,21 @@ int main()
 		//camera.Listen(msg, deltaTime, xOffset, yOffset);
 
 		// 计算mvp矩阵
-		//Mat4 view = camera.GetViewMatrix(first);
-		//Mat4 mvp = projection * view * model;
+		//Sleep(20);
+		model = Translate(translate) * Rotate(ny, 0.5f) * Translate(-1.0f * translate) * model;
+		Mat4 view = camera.GetViewMatrix();
+		Mat4 mvp = projection * view * model;
 
 		// 绘制模型
-		screen.RenderModel(myModel);
+		screen.RenderModel(model, mvp, myModel, lightPos, viewPos);
 		FlushBatchDraw();
 
 		// 清理zBuffer
 		screen.ClearZ();
 	}
+	
+	
+
 	EndBatchDraw();
 	_getch();
 	screen.Close();

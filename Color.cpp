@@ -1,6 +1,7 @@
 #include "Color.h"
 #include "Global.h"
 
+
 // 默认构造函数
 Color::Color()
 {
@@ -30,6 +31,15 @@ Color::Color(const Color& rhs)
 	this->a = rhs.a;
 }
 
+// 转换函数
+Color::Color(const Vec3& rhs, float a)
+{
+	this->r = rhs.X();
+	this->g = rhs.Y();
+	this->b = rhs.Z();
+	this->a = 1.0f;
+}
+
 Color::~Color()
 {
 }
@@ -51,10 +61,12 @@ float Color::A()const
 	return a;
 }
 
+/*
 Vec3 Color::RGB()const
 {
 	return *new Vec3(r, g, b);
 }
+*/
 
 void Color::SetR(float r)
 {
@@ -102,6 +114,12 @@ Color operator*(float k, const Color& c)
 Color operator/(const Color& c, float k)
 {
 	return Color(c.R() / k, c.G() / k, c.B() / k, c.A() / k);
+}
+// 输出运算符重载
+std::ostream& operator<<(std::ostream& out, const Color& color)
+{
+	out << color.R() << " " << color.G() << " " << color.B();
+	return out;
 }
 
 bool operator==(const Color& a, const Color& b)

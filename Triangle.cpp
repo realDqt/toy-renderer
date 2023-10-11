@@ -13,16 +13,19 @@ Triangle::Triangle(Triangle& rhs)
 {
 	for (int i = 0; i < 3; ++i) {
 		this->points[i] = rhs.points[i];
+		this->worldPoints[i] = rhs.worldPoints[i];
 		this->oriPoints[i] = rhs.oriPoints[i];
 		this->texCoords[i] = rhs.texCoords[i];
 	}
 }
 
-Triangle::Triangle(Vec4* points, Vec2* texCoors)
+Triangle::Triangle(Vec4* points, Vec2* texCoords, Vec3* normals)
 {
 	for (int i = 0; i < 3; ++i) {
 		if(points)this->oriPoints[i] = this->points[i] = points[i];
 		if(texCoords)this->texCoords[i] = texCoords[i];
+		//if(texCoords)std::cout << "Triangle texCoords: " << texCoords[i] << std::endl;
+		if(normals)this->normals[i] = normals[i];
 	}
 }
 
@@ -120,4 +123,31 @@ void Triangle::Transform(const Mat4& mvp, int width, int height, int depth, bool
 		if (print)std::cout << points[i] << std::endl;
 	}
 	if(print)std::cout << std::endl;
+}
+
+// 计算各顶点世界坐标
+void Triangle::CalcWorldPoints(const Mat4& model)
+{
+	for (int i = 0; i < 3; ++i) {
+		worldPoints[i] = model * oriPoints[i];
+	}
+}
+
+// 获取各顶点世界坐标
+Vec4* Triangle::GetWorldPoints()
+{
+	return worldPoints;
+}
+
+// 获取各顶点法向量
+Vec3* Triangle::GetNormals()
+{
+	return normals;
+}
+
+// 获取各顶点纹理坐标
+Vec2* Triangle::GetTexCoords()
+{
+	//std::cout << "GetTexCoords texCoords[0]: " << texCoords[0] << std::endl;
+	return texCoords;
 }

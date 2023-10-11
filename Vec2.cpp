@@ -89,3 +89,9 @@ Vec2 operator/(const Vec2& v, float k)
 	Vec2 res(v.X() / k, v.Y() / k);
 	return res;
 }
+// Êä³öÔËËã·ûÖØÔØ
+std::ostream& operator<<(std::ostream& out, const Vec2& v)
+{
+	out << v.X() << " " << v.Y();
+	return out;
+}

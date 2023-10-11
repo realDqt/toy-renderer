@@ -57,6 +57,8 @@ Model::Model(const char* filePath)
 			faces.push_back(face);
 		}
 	}
+	// 加载纹理贴图
+	diffuseMap = new Image("nothing");
 	// debug
 	std::cout << "NumOfVertices: " << vertices.size() << std::endl;
 	std::cout << "NumOfTexCoords: " << texCoords.size() << std::endl;
@@ -101,4 +103,10 @@ Vec2 Model::TexCoord(int idx)
 Vec3 Model::Vertex(int iFace, int iVertex)
 {
 	return faces[iFace][iVertex];
+}
+
+// 获取漫反射贴图
+Image* Model::GetDiffuseMap()
+{
+	return diffuseMap;
 }

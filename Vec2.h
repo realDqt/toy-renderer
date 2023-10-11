@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 class Vec2 {
 public:
 	Vec2();                                  // 默认构造函数
@@ -21,4 +22,5 @@ Vec2 operator+(const Vec2& a, const Vec2& b);  // 向量加法
 Vec2 operator-(const Vec2& a, const Vec2& b);  // 向量减法
 Vec2 operator*(float k, const Vec2& v);        // 向量数乘
 Vec2 operator/(const Vec2& v, float k);        // 向量数除
+std::ostream& operator<<(std::ostream& out, const Vec2& v);
 

@@ -1,8 +1,13 @@
 #pragma once
+#define NOMINMAX
 #include "Vec3.h"
 #include "Vec4.h"
 #include "Mat3.h"
 #include "Mat4.h"
+#include "Color.h"
+#include "Triangle.h"
+#include "Image.h"
+
 
 const float INF = 3.40282e+38;
 const float PI = 3.1415926f;
@@ -45,3 +50,9 @@ Mat4 Perspective(float fov, float ratio, float zNear, float zFar);
 
 // Mat4¡ÁVec4
 Vec4 operator* (const Mat4& M, const Vec4& v);
+
+// Blin-Phong
+Color BlinPhong(const Mat4& normalMatrix, Image* diffuseMap, Triangle& triangle, const Vec3& bary, const Vec3& lightPos, const Vec3& viewPos);
+
+// max
+float Max(float a, float b);

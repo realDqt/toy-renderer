@@ -37,6 +37,7 @@ Camera::~Camera()
 
 Mat4 Camera::GetViewMatrix(bool print)
 {
+	/*
 	// debug
 	if (print) {
 		std::cout << "GetViewMatrix:" << std::endl;
@@ -44,6 +45,7 @@ Mat4 Camera::GetViewMatrix(bool print)
 		std::cout << "front: " << front << std::endl;
 		std::cout << "worldUp: " << worldUp << std::endl;
 	}
+	*/
 	return LookAt(position, position + front, worldUp);
 }
 

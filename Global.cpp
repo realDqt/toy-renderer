@@ -1,5 +1,7 @@
 #include "global.h"
+#include <algorithm>
 #include <cmath>
+#define NOMINMAX
 
 // 判断k是否属于区间[min, max]
 bool InRange(float k, float min, float max)
@@ -124,7 +126,7 @@ Mat4 Perspective(float fov, float ratio, float zNear, float zFar)
 	Mp2o[2][3] = -n * f;
 	Mp2o[3][2] = 1.0f;
 
-	return Mp2o;
+	return Ortho(l, r, t, b, n, f) * Mp2o;
 }
 
 // Mat4×Vec4
@@ -139,4 +141,62 @@ Vec4 operator*(const Mat4& M, const Vec4& v)
 		res[i] = sum;
 	}
 	return res;
+}
+
+// Blin-Phong
+Color BlinPhong(const Mat4& normalMatrix, Image* diffuseMap, Triangle& triangle, const Vec3& bary, const Vec3& lightPos, const Vec3& viewPos)
+{
+	// 计算worldPos
+	Vec4* worldPoints = triangle.GetWorldPoints();
+	// 归一化其次分量
+	for (int i = 0; i < 3; ++i)worldPoints[i] = worldPoints[i] / worldPoints[i].W();
+	Vec3 worldPos = bary.X() * worldPoints[0].XYZ() + bary.Y() * worldPoints[1].XYZ() + bary.Z() * worldPoints[2].XYZ();
+
+
+	// 计算法向量
+	Vec3* normals = triangle.GetNormals();
+	Vec3 normal = normalMatrix * Vec4(bary.X() * normals[0] + bary.Y() * normals[1] + bary.Z() * normals[2], 0.0f);
+	normal = Normalize(normal);
+	
+
+	// 计算纹理颜色
+	Vec2* texCoords = triangle.GetTexCoords();
+	Vec2 uv = bary.X() * texCoords[0] + bary.Y() * texCoords[1] + bary.Z() * texCoords[2];
+	//std::cout << "Blin-Phong texCoords:" << std::endl;
+	//for (int i = 0; i < 3; ++i) {
+		//std::cout << texCoords[i] << std::endl;
+	//}
+	//std::cout << "Blin-Phong bary: " << bary << std::endl;
+	//std::cout << "Blin-Phong uv: " << uv << std::endl;
+	Color color = diffuseMap->GetPixel(uv);
+
+	// 定义光源强度
+	Color lightIntensity(1.0f);
+
+	// 环境光
+	float ambi = 0.03;
+	Color ambient = ambi * lightIntensity;
+
+	// 漫反射
+	Vec3 lightDir = Normalize(lightPos - worldPos);
+	float diff = std::max(Dot(lightDir, normal), 0.0f);
+	Color diffuse = diff * color;
+
+	// 镜面反射
+	Vec3 viewDir = Normalize(viewPos - worldPos);
+	Vec3 halfVec = Normalize(lightDir + viewDir);
+	// 定义闪光度
+	float shininess = 32.0f;
+	float spec = std::pow(std::max(Dot(halfVec, normal), 0.0f), shininess);
+	Color specular = spec * color;
+
+	//std::cout << color << std::endl;
+	return color;
+	//return (normal + Vec3(1.0f)) / 2.0f;
+}
+
+// max
+float Max(float a, float b)
+{
+	return a > b ? a : b;
 }
