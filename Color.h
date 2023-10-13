@@ -18,6 +18,8 @@ public:
 	void SetB(float b);
 	void SetA(float a);
 	Color& operator=(const Color& rhs);
+	float& operator[](int idx);
+	const float& operator[](int idx)const;
 private:
 	float r, g, b, a;                                 // 红蓝绿分量及透明度
 };
@@ -26,6 +28,7 @@ Color operator+(const Color& a, const Color& b);
 Color operator-(const Color& a, const Color& b);
 Color operator*(float k, const Color& c);
 Color operator/(const Color& c, float k);
+Color operator*(const Color& a, const Color& b);      // 向量对应分量相乘
 std::ostream& operator<<(std::ostream& out, const Color& color);
 
 bool operator==(const Color& a, const Color& b);

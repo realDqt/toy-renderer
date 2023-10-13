@@ -29,5 +29,6 @@ Vec4 operator+(const Vec4& a, const Vec4& b);               // 向量加法
 Vec4 operator-(const Vec4& a, const Vec4& b);               // 向量减法
 Vec4 operator*(float k, const Vec4& v);                     // 向量数乘
 Vec4 operator/(const Vec4& v, float k);                     // 向量数除
+Vec4 operator*(const Vec4& a, const Vec4& b);               // 向量对应分量相乘
 std::ostream& operator<<(std::ostream& out, const Vec4& v); // 输出运算符重载
 

@@ -141,3 +141,15 @@ void Camera::Listen(ExMessage* msg, float deltaTime, float xOffset, float yOffse
 	ProcessMouseMovement(xOffset, yOffset);
 	ProcessKeyboard(msg, deltaTime);
 }
+
+// 获取摄像机位置
+Vec3& Camera::GetPosition()
+{
+	return position;
+}
+
+// 获取摄像机位置
+const Vec3& Camera::GetPosition()const
+{
+	return position;
+}

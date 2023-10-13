@@ -12,8 +12,8 @@ Screen::Screen(int width, int height, int depth, Color bgColor)
 	
 	// 为深度缓冲申请内存
 	zBuffer = new float[width * height];
-	// 初始化深度缓冲为最大值
-	for (int i = 0; i < width * height; ++i)zBuffer[i] = INF;
+	// 初始化深度缓冲为最远值
+	for (int i = 0; i < width * height; ++i)zBuffer[i] = -INF;
 }
 
 Screen::~Screen()
@@ -72,8 +72,7 @@ void Screen::SetPixel(int x, int y, Color color)
 // 光栅化三角形，三角形的顶点坐标是屏幕坐标
 void Screen::RasterizeTriangle(Triangle& triangle, Color* pointColors)
 {
-	// 若三角形不在屏幕内部，放弃绘制
-	if (!InScreen(triangle))return;
+
 	//std::cout << "In Screen!" << std::endl;
 	//for (int i = 0; i < 3; ++i)std::cout << triangle[i] << std::endl;
 	//std::cout << std::endl;
@@ -101,6 +100,8 @@ void Screen::RasterizeTriangle(Triangle& triangle, Color* pointColors)
 			if (!InRange(bary.X(), 0.0f, 1.0f) || !InRange(bary.Y(), 0.0f, 1.0f) || !InRange(bary.Z(), 0.0f, 1.0f))continue;
 			// 插值计算深度
 			float z = bary.X() * triangle[0].Z() + bary.Y() * triangle[1].Z() + bary.Z() * triangle[2].Z();
+			// 判断是否在屏幕内部
+			if (!InRange(z, -1.0, 1.0f))continue;
 			// 深度测试
 			int idx = (height - y) * width + x;
 			if (zBuffer[idx] < z)continue;
@@ -117,8 +118,6 @@ void Screen::RasterizeTriangle(Triangle& triangle, Color* pointColors)
 // MSAA
 void Screen::RasterizeTriangleMSAA(Triangle& triangle, Color* pointColors)
 {
-	// 若三角形不在屏幕内部，放弃绘制
-	if (!InScreen(triangle))return;
 	//std::cout << "In Screen!" << std::endl;
 	//for (int i = 0; i < 3; ++i)std::cout << triangle[i] << std::endl;
 	//std::cout << std::endl;
@@ -140,13 +139,17 @@ void Screen::RasterizeTriangleMSAA(Triangle& triangle, Color* pointColors)
 	// 遍历包围盒中的每一个像素
 	for (int x = bboxmin.X(); x <= bboxmax.X(); ++x) {
 		for (int y = bboxmin.Y(); y <= bboxmax.Y(); ++y) {
+			// 判断是否在屏幕内部
+			if (!InRange(x, 0.0f, width) || !InRange(y, 0.0f, height))continue;
 			// 深度测试
 			// 计算重心坐标
 			Vec3 bary = triangle.Barycentric(Vec2(x, y));
 			float z = bary.X() * triangle[0].Z() + bary.Y() * triangle[1].Z() + bary.Z() * triangle[2].Z();
+			// 判断是否在屏幕内部
+			if (!InRange(z, -1.0, 1.0f))continue;
 			// 二维坐标转换至一维坐标，注意反转y轴
 			int idx = (height - y) * width + x;
-			if (z > zBuffer[idx])continue;
+			if (z < zBuffer[idx])continue;
 			// 更新zBuffer
 			zBuffer[idx] = z;
 
@@ -174,6 +177,7 @@ void Screen::RasterizeTriangleMSAA(Triangle& triangle, Color* pointColors)
 // 光栅化三角形，正式进行光照计算
 void Screen::RasterizeTriangle(const Mat4& normalMatrix, Image* diffuseMap, Triangle& triangle, const Vec3& lightPos, const Vec3& viewPos)
 {
+	//for (int i = 0; i < 3; ++i)std::cout << triangle[i] << std::endl;
 	// 计算三角形包围盒
 	Vec2 bboxmin(INF, INF);
 	Vec2 bboxmax(-INF, -INF);
@@ -187,6 +191,8 @@ void Screen::RasterizeTriangle(const Mat4& normalMatrix, Image* diffuseMap, Tria
 
 	for (int x = bboxmin.X(); x < bboxmax.X(); ++x) {
 		for (int y = bboxmin.Y(); y < bboxmax.Y(); ++y) {
+			// 判断是否在屏幕内部
+			if (!InRange(x, 0.0f, width) || !InRange(y, 0.0f, height))continue;
 			// 计算重心坐标
 			Vec3 bary = triangle.Barycentric(Vec2(x, y));
 			// 判断是否在三角形内部
@@ -194,8 +200,10 @@ void Screen::RasterizeTriangle(const Mat4& normalMatrix, Image* diffuseMap, Tria
 				continue;
 			// 深度测试
 			float z = bary.X() * triangle[0].Z() + bary.Y() * triangle[1].Z() + bary.Z() * triangle[2].Z();
+			// 判断是否在屏幕内部
+			if (!InRange(z, -1.0, 1.0f))continue;
 			int idx = (height - y) * width + x;
-			if (z > zBuffer[idx])continue;
+			if (z < zBuffer[idx])continue;
 			// 更新zBuffer
 			zBuffer[idx] = z;
 			// 光照计算
@@ -222,7 +230,10 @@ void Screen::RenderModel(const Mat4& m, const Mat4& mvp, Model& model, const Vec
 {
 	int nFaces = model.NumOfFaces();
 	Image* diffuseMap = model.GetDiffuseMap();
+	//std::cout << "RenderModel m: " << std::endl << m << std::endl;
+	//std::cout << "RenderModel m.inverse: " << std::endl << m.Inverse() << std::endl;
 	Mat4 normalMatrix = m.Inverse().Transpose();
+	//std::cout << "RenderModel normalMatrix: " << std::endl << normalMatrix << std::endl;
 	for (int i = 0; i < nFaces; ++i) {
 		// 构造三角形
 		Vec4* points = new Vec4[3];
@@ -301,5 +312,5 @@ void Screen::RenderModel(Model& model)
 // 清理zBuffer
 void Screen::ClearZ()
 {
-	for (int i = 0; i < height * width; ++i)zBuffer[i] = INF;
+	for (int i = 0; i < height * width; ++i)zBuffer[i] = -INF;
 }

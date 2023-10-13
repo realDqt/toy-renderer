@@ -106,7 +106,7 @@ void Triangle::Transform(const Mat4& mvp, int width, int height, int depth, bool
 	// 透视除法
 	if (print)std::cout << "after perspective divide: " << std::endl;
 	for (int i = 0; i < 3; ++i) {
-		//assert(!FloatEqual(points[i].W(), 0.0f));
+		assert(!FloatEqual(points[i].W(), 0.0f));
 		points[i] = points[i] / points[i].W();
 		if(print)std::cout << points[i] << std::endl;
 	}
@@ -114,8 +114,8 @@ void Triangle::Transform(const Mat4& mvp, int width, int height, int depth, bool
 	
 
 	// 视口变换
-	Vec3 scale(width / 2.0f, height / 2.0f, depth / 2.0f);
-	Vec3 translate(width / 2.0f, height / 2.0f, -depth / 2.0f);
+	Vec3 scale(width / 2.0f, height / 2.0f, 1.0f);
+	Vec3 translate(width / 2.0f, height / 2.0f, 0.0f);
 	Mat4 viewport = Translate(translate) * Scale(scale);
 	if(print)std::cout << "after viewport transform: " << std::endl;
 	for (int i = 0; i < 3; ++i) {
@@ -142,6 +142,7 @@ Vec4* Triangle::GetWorldPoints()
 // 获取各顶点法向量
 Vec3* Triangle::GetNormals()
 {
+	//std::cout << "GetNormals: " << normals[0] << std::endl;
 	return normals;
 }
 

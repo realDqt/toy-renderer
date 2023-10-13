@@ -11,6 +11,8 @@ public:
 	~Camera();
 	Mat4 GetViewMatrix(bool print = false);
 	void Listen(ExMessage* msg, float deltaTime, float xOffset, float yOffset); // 监听外部事件
+	Vec3& GetPosition();                                                        // 获取摄像机位置
+	const Vec3& GetPosition()const;                                             // 获取摄像机位置
 private:
 	Mat4 LookAt(const Vec3& position, const Vec3& center, const Vec3& worldUp); // 计算view矩阵
 	void UpdateCameraVectors();                                                 // 根据yaw和pitch，更新front、up和right

@@ -95,6 +95,22 @@ Color& Color::operator=(const Color& rhs)
 	return *this;
 }
 
+float& Color::operator[](int idx)
+{
+	if (idx == 0)return r;
+	else if (idx == 1)return g;
+	else if (idx == 2)return b;
+	else return a;
+}
+
+const float& Color::operator[](int idx)const 
+{
+	if (idx == 0)return r;
+	else if (idx == 1)return g;
+	else if (idx == 2)return b;
+	else return a;
+}
+
 // 向量加法
 Color operator+(const Color& a, const Color& b)
 {
@@ -120,6 +136,15 @@ std::ostream& operator<<(std::ostream& out, const Color& color)
 {
 	out << color.R() << " " << color.G() << " " << color.B();
 	return out;
+}
+// 颜色对应分量相乘
+Color operator*(const Color& a, const Color& b)
+{
+	Color res(1.0f);
+	for (int i = 0; i < 4; ++i) {
+		res[i] = a[i] * b[i];
+	}
+	return res;
 }
 
 bool operator==(const Color& a, const Color& b)

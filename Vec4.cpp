@@ -131,3 +131,12 @@ Vec4 operator/(const Vec4& v, float k)
 	Vec4 res(v.X() / k, v.Y() / k, v.Z() / k, v.W() / k);
 	return res;
 }
+// 向量对应分量相乘
+Vec4 operator*(const Vec4& a, const Vec4& b)
+{
+	Vec4 res(1.0f);
+	for (int i = 0; i < 4; ++i) {
+		res[i] = a[i] * b[i];
+	}
+	return res;
+}

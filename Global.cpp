@@ -97,13 +97,9 @@ Mat4 Scale(const Vec3& scale)
 Mat4 Ortho(float l, float r, float t, float b, float n, float f)
 {
 	// n和f都是负值
-	Mat4 res(1.0f);
-	res[0][0] = 2.0f / (r - l);
-	res[1][1] = 2.0f / (t - b);
-	res[2][2] = 2.0f / (n - f);
-	res[0][3] = -(l + r) / 2.0f;
-	res[1][3] = -(t + b) / 2.0f;
-	res[2][3] = -(n + f) / 2.0f;
+	Vec3 scale(2.0f / (r - l), 2.0f / (t - b), 2.0f / (n - f));
+	Vec3 translate(-(l + r) / 2.0f, -(t + b) / 2.0f, -(n + f) / 2.0f);
+	Mat4 res = Scale(scale) * Translate(translate);
 	return res;
 }
 
@@ -149,7 +145,7 @@ Color BlinPhong(const Mat4& normalMatrix, Image* diffuseMap, Triangle& triangle,
 	// 计算worldPos
 	Vec4* worldPoints = triangle.GetWorldPoints();
 	// 归一化其次分量
-	for (int i = 0; i < 3; ++i)worldPoints[i] = worldPoints[i] / worldPoints[i].W();
+	//for (int i = 0; i < 3; ++i)worldPoints[i] = worldPoints[i] / worldPoints[i].W();
 	Vec3 worldPos = bary.X() * worldPoints[0].XYZ() + bary.Y() * worldPoints[1].XYZ() + bary.Z() * worldPoints[2].XYZ();
 
 
@@ -157,6 +153,8 @@ Color BlinPhong(const Mat4& normalMatrix, Image* diffuseMap, Triangle& triangle,
 	Vec3* normals = triangle.GetNormals();
 	Vec3 normal = normalMatrix * Vec4(bary.X() * normals[0] + bary.Y() * normals[1] + bary.Z() * normals[2], 0.0f);
 	normal = Normalize(normal);
+	//std::cout << "Blin-Phong Matrix: " <<std::endl << normalMatrix << std::endl;
+	//std::cout << "Blin-Phong normal: " << normal << std::endl;
 	
 
 	// 计算纹理颜色
@@ -174,24 +172,28 @@ Color BlinPhong(const Mat4& normalMatrix, Image* diffuseMap, Triangle& triangle,
 	Color lightIntensity(1.0f);
 
 	// 环境光
-	float ambi = 0.03;
-	Color ambient = ambi * lightIntensity;
+	float ambi = 0.3;
+	Color ambient = ambi * lightIntensity * color;
 
 	// 漫反射
 	Vec3 lightDir = Normalize(lightPos - worldPos);
 	float diff = std::max(Dot(lightDir, normal), 0.0f);
-	Color diffuse = diff * color;
+	Color diffuse = diff * lightIntensity * color;
 
 	// 镜面反射
 	Vec3 viewDir = Normalize(viewPos - worldPos);
 	Vec3 halfVec = Normalize(lightDir + viewDir);
 	// 定义闪光度
-	float shininess = 32.0f;
+	float shininess = 16.0f;
 	float spec = std::pow(std::max(Dot(halfVec, normal), 0.0f), shininess);
-	Color specular = spec * color;
+	Color specular = spec * lightIntensity * color;
 
+	Color res(0.0f);
+	for (int i = 0; i < 3; ++i) {
+		res[i] = std::min(ambient[i] + diffuse[i] + specular[i], 1.0f);
+	}
 	//std::cout << color << std::endl;
-	return color;
+	return res;
 	//return (normal + Vec3(1.0f)) / 2.0f;
 }
 

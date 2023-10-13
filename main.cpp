@@ -7,20 +7,21 @@
 #include <iostream>
 #include <conio.h>
 
-const int SCR_WIDTH = 800;             // 屏幕宽度
-const int SCR_HEIGHT = 600;            // 屏幕高度
-const int SCR_DEPTH = 1000;            // 屏幕深度
+const int SCR_WIDTH = 800;              // 屏幕宽度
+const int SCR_HEIGHT = 600;             // 屏幕高度
+const int SCR_DEPTH = 1000;             // 屏幕深度
 
-float lastX = 0.0f, lastY = 0.0f;      // 上次鼠标的坐标
-float lastFrame = 0.0f;                // 上次时间
+float lastX = 0.0f, lastY = 0.0f;       // 上次鼠标的坐标
+float lastFrame = 0.0f;                 // 上次时间
 
-const Vec3 position(0.0f, 0.0f, 0.0f); // 摄像机位置
-const Vec3 worldUp(0.0f, 1.0f, 0.0f);  // 世界上方
-float yaw = -90.0f;                    // 偏航角
-float pitch = 0.0f;                    // 俯仰角
+const Vec3 position(0.0f, 0.0f, 0.0f);  // 摄像机初始位置
+const Vec3 worldUp(0.0f, 1.0f, 0.0f);   // 世界上方
+float yaw = -90.0f;                     // 偏航角
+float pitch = 0.0f;                     // 俯仰角
 
-const Vec3 lightPos(1.0f, 1.0f, 1.0f); // 光源位置
-const Vec3 viewPos(0.0f, 0.0f, 0.0f);  // 观察位置
+Vec3 lightPos(1.0f, 1.0f, 1.0f);        // 光源位置
+Vec3 viewPos(0.0f, 0.0f, 0.0f);         // 观察位置
+
 
 int main()
 {
@@ -40,7 +41,7 @@ int main()
 	Vec3 translate(0.0f, -0.8f, -1.5f);
 	Vec3 nx(1.0f, 0.0f, 0.0f), ny(0.0f, 1.0f, 0.0f), nz(0.0f, 0.0f, 1.0f);
 	Vec3 scale(1.0f, 1.0f, 1.0f);
-	Mat4 model = Translate(translate) * model;
+	Mat4 model = Translate(translate) * Rotate(ny, 0.5f);
 
 	// 计算projection矩阵
 	float fov = Radians(90.0f);
@@ -82,9 +83,13 @@ int main()
 
 		// 计算mvp矩阵
 		//Sleep(20);
-		model = Translate(translate) * Rotate(ny, 0.5f) * Translate(-1.0f * translate) * model;
+		//model = Translate(translate) * Rotate(ny, 0.5f) * Translate(-1.0f * translate) * model;
+		//model = Translate(Vec3(0.0f, 0.0f, -0.1f)) * model;
 		Mat4 view = camera.GetViewMatrix();
 		Mat4 mvp = projection * view * model;
+
+		viewPos = camera.GetPosition();
+		lightPos = Rotate(ny, 0.5f) * Vec4(lightPos, 1.0f);
 
 		// 绘制模型
 		screen.RenderModel(model, mvp, myModel, lightPos, viewPos);
@@ -94,8 +99,17 @@ int main()
 		screen.ClearZ();
 	}
 	
-	
 
+
+	// debug
+	/*
+	Mat4 test(1.0f);
+	for (int i = 0; i < 4; ++i)test[i][i] = static_cast<float>(i + 1);
+	Mat4 invT = test.Inverse().Transpose();
+	std::cout << "test.inverse: " << std::endl << test.Inverse() << std::endl;
+	std::cout << "test.transpose: " << std::endl << test.Transpose() << std::endl;
+	std::cout << "test.inverse.transpose: " << std::endl << invT << std::endl;
+	*/
 	EndBatchDraw();
 	_getch();
 	screen.Close();

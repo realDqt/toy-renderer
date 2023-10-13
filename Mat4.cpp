@@ -1,5 +1,7 @@
 #include "Mat4.h"
+#include "Global.h"
 #include <assert.h>
+
 
 // 默认构造函数
 Mat4::Mat4()
@@ -83,33 +85,52 @@ Mat4 Mat4::Transpose()const
 
 Mat4 Mat4::Inverse()const
 {
+	/*
+	std::cout << "Inverse data: " << std::endl;
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; ++j) {
+			std::cout << data[i][j] << " ";
+		}
+		std::cout << std::endl;
+	}
+	*/
 	// 构造伴随矩阵
 	Mat4 AStar(1.0f);
-	int tem[9] = { 0 };
+	float tem[9] = { 0.0f };
 	for (int i = 0; i < 4; ++i) {
 		for (int j = 0; j < 4; ++j) {
 			// 求Mji
 			// 构造三阶方阵
 			int len = 0;
+			//std::cout << "j-i: " << j << "-" << i << std::endl;
 			for (int p = 0; p < 4; ++p) {
 				for (int q = 0; q < 4; ++q) {
 					if (p == j || q == i)continue;
+					//std::cout << p << "-" << q << ": " << data[p][q] << " ";
 					tem[len++] = data[p][q];
 				}
 			}
+			//std::cout << std::endl;
+			//std::cout << "tem: " << std::endl;
+			//for (int i = 0; i < len; ++i)std::cout << tem[i] << " ";
+			//std::cout << std::endl;
 			Mat3 M(1.0f);
 			for (int p = 0; p < 3; ++p) {
 				for (int q = 0; q < 3; ++q) {
 					M[p][q] = tem[p * 3 + q];
 				}
 			}
+			//std::cout << "M: " << std::endl << M << std::endl;
 			float Mji = M.Det();
+			//std::cout << "Mji: " << Mji << std::endl;
 			AStar[i][j] = (i + j) & 1 ? -Mji : Mji;
 		}
 	}
+	//std::cout << "Inverse Astar: " << std::endl << AStar << std::endl;
 	// 求矩阵行列式的值
 	float det = Det();
-	assert(det != 0);
+	//std::cout << "Inverse det: " << std::endl << det << std::endl;
+	assert(!FloatEqual(det, 0.0f));
 	// 返回结果
 	return AStar / det;
 }
@@ -143,7 +164,7 @@ Mat4 operator*(const Mat4& a, const Mat4& b)
 	Mat4 res(1.0f);
 	for (int i = 0; i < 4; ++i) {
 		for (int j = 0; j < 4; ++j) {
-			float sum = 0;
+			float sum = 0.0f;
 			for (int k = 0; k < 4; ++k) {
 				sum += a[i][k] * b[k][j];
 			}

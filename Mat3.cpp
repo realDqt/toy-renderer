@@ -91,7 +91,7 @@ Mat3 Mat3::Inverse()const
 {
 	// Çó°éËæ¾ØÕó
 	Mat3 AStar(1.0f);
-	float tem[4] = { 0 };
+	float tem[4] = { 0.0f };
 	for (int i = 0; i < 3; ++i) {
 		for (int j = 0; j < 3; ++j) {
 			// ¼ÆËãMji
