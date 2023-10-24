@@ -1,10 +1,17 @@
 #include "global.h"
+#include <assert.h>
 #include <algorithm>
 #include <cmath>
 #define NOMINMAX
 
 // 判断k是否属于区间[min, max]
 bool InRange(float k, float min, float max)
+{
+	return k >= min && k <= max;
+}
+
+// 判断k是否属于区间[min, max]
+bool InRange(int k, int min, int max)
 {
 	return k >= min && k <= max;
 }
@@ -33,7 +40,9 @@ float Length(const Vec3& v)
 // 标准化Vec3
 Vec3 Normalize(const Vec3& v)
 {
-	return v / Length(v);
+	float len = Length(v);
+	assert(!FloatEqual(len, 0.0f));
+	return v / len;
 }
 
 // 角度转弧度
@@ -172,7 +181,7 @@ Color BlinPhong(const Mat4& normalMatrix, Image* diffuseMap, Triangle& triangle,
 	Color lightIntensity(1.0f);
 
 	// 环境光
-	float ambi = 0.3;
+	float ambi = 0.2;
 	Color ambient = ambi * lightIntensity * color;
 
 	// 漫反射
@@ -184,7 +193,7 @@ Color BlinPhong(const Mat4& normalMatrix, Image* diffuseMap, Triangle& triangle,
 	Vec3 viewDir = Normalize(viewPos - worldPos);
 	Vec3 halfVec = Normalize(lightDir + viewDir);
 	// 定义闪光度
-	float shininess = 16.0f;
+	float shininess = 8.0f;
 	float spec = std::pow(std::max(Dot(halfVec, normal), 0.0f), shininess);
 	Color specular = spec * lightIntensity * color;
 
@@ -197,8 +206,94 @@ Color BlinPhong(const Mat4& normalMatrix, Image* diffuseMap, Triangle& triangle,
 	//return (normal + Vec3(1.0f)) / 2.0f;
 }
 
+// Blin-Phong with ShadowMap
+Color BlinPhongShadow(const Screen& screen, const Mat4& projection, const Mat4& normalMatrix, Image* diffuseMap, Triangle& triangle, const Vec3& bary, const Vec3& lightPos, const Vec3& viewPos)
+{
+	// 计算worldPos
+	Vec4* worldPoints = triangle.GetWorldPoints();
+	// 归一化其次分量
+	//for (int i = 0; i < 3; ++i)worldPoints[i] = worldPoints[i] / worldPoints[i].W();
+	Vec3 worldPos = bary.X() * worldPoints[0].XYZ() + bary.Y() * worldPoints[1].XYZ() + bary.Z() * worldPoints[2].XYZ();
+
+
+	// 计算法向量
+	Vec3* normals = triangle.GetNormals();
+	Vec3 normal = normalMatrix * Vec4(bary.X() * normals[0] + bary.Y() * normals[1] + bary.Z() * normals[2], 0.0f);
+	normal = Normalize(normal);
+	//std::cout << "Blin-Phong Matrix: " <<std::endl << normalMatrix << std::endl;
+	//std::cout << "Blin-Phong normal: " << normal << std::endl;
+
+
+	// 计算纹理颜色
+	Vec2* texCoords = triangle.GetTexCoords();
+	Vec2 uv = bary.X() * texCoords[0] + bary.Y() * texCoords[1] + bary.Z() * texCoords[2];
+	//std::cout << "Blin-Phong texCoords:" << std::endl;
+	//for (int i = 0; i < 3; ++i) {
+		//std::cout << texCoords[i] << std::endl;
+	//}
+	//std::cout << "Blin-Phong bary: " << bary << std::endl;
+	//std::cout << "Blin-Phong uv: " << uv << std::endl;
+	Color color = diffuseMap->GetPixel(uv);
+
+	// 定义光源强度
+	Color lightIntensity(1.0f);
+
+	// 环境光
+	float ambi = 0.2;
+	Color ambient = ambi * lightIntensity * color;
+
+	// mvp变换
+	int width = screen.GetWidth(), height = screen.GetHeight();
+	Mat4 view = Camera::LookAt(lightPos, Vec3(0.0f, -0.8f, -1.5f), Vec3(0.0f, 1.0f, 0.0f));
+	//Mat4 projection = Perspective(Radians(90.0f), (float)width / height, 0.1f, 100.0f);
+	Vec4 coord = projection * view * worldPos;
+	// 透视除法
+	coord = coord / coord.W();
+	// 视口变换
+	Vec3 translate(width / 2.0f, height / 2.0f, 0.0f), scale(width / 2.0f, height / 2.0f, 1.0f);
+	Mat4 viewport = Translate(translate) * Scale(scale);
+	coord = viewport * coord;
+	int x = coord.X(), y = coord.Y();
+	float z = coord.Z();
+
+	// 判断是否处于阴影中
+	// pcf
+	float* depthMap = screen.GetDepthMap();
+	int cnt = 0;
+	for (int dx = -1; dx <= 1; ++dx) {
+		for (int dy = -1; dy <= 1; ++dy) {
+			int nx = x + dx, ny = y + dy;
+			int idx = (height - ny - 1) * width + nx;
+			if (z + 0.001f < depthMap[idx])++cnt;
+		}
+	}
+	float k = (9.0f - cnt) / 9.0f;
+
+	// 漫反射
+	Vec3 lightDir = Normalize(lightPos - worldPos);
+	float diff = std::max(Dot(lightDir, normal), 0.0f);
+	Color diffuse = diff * lightIntensity * color;
+
+	// 镜面反射
+	Vec3 viewDir = Normalize(viewPos - worldPos);
+	Vec3 halfVec = Normalize(lightDir + viewDir);
+	// 定义闪光度
+	float shininess = 8.0f;
+	float spec = std::pow(std::max(Dot(halfVec, normal), 0.0f), shininess);
+	Color specular = spec * lightIntensity * color;
+
+	Color res(0.0f);
+	for (int i = 0; i < 3; ++i) {
+		res[i] = std::min(ambient[i] + k*(diffuse[i] + specular[i]), 1.0f);
+	}
+	//std::cout << color << std::endl;
+	return res;
+	//return (normal + Vec3(1.0f)) / 2.0f;
+}
+
 // max
 float Max(float a, float b)
 {
 	return a > b ? a : b;
 }
+

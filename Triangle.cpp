@@ -92,7 +92,7 @@ Vec3 Triangle::Barycentric(Vec2 point)
 }
 
 // 完成MVP变换、透视除法和视口变换
-void Triangle::Transform(const Mat4& mvp, int width, int height, int depth, bool print)
+void Triangle::Transform(const Mat4& mvp, int width, int height, bool print)
 {
 	// mvp变换
 	if (print)std::cout << "after mvp: " << std::endl;

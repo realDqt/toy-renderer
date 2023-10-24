@@ -16,7 +16,7 @@ public:
 	void SetB(Vec4& B);
 	void SetC(Vec4& C);
 	Vec3 Barycentric(Vec2 point);
-	void Transform(const Mat4& mvp, int width, int height, int depth, bool print = false); // 完成MVP变换、透视除法和视口变换 
+	void Transform(const Mat4& mvp, int width, int height, bool print = false); // 完成MVP变换、透视除法和视口变换 
 	void CalcWorldPoints(const Mat4& model);                           // 计算各顶点世界坐标
 	Vec4* GetWorldPoints();                                            // 获取各顶点世界坐标
 	Vec3* GetNormals();                                                // 获取各顶点法向量

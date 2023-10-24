@@ -19,7 +19,7 @@ const Vec3 worldUp(0.0f, 1.0f, 0.0f);   // 世界上方
 float yaw = -90.0f;                     // 偏航角
 float pitch = 0.0f;                     // 俯仰角
 
-Vec3 lightPos(1.0f, 1.0f, 1.0f);        // 光源位置
+Vec3 lightPos(2.0f, 2.0f, 2.0f);        // 光源位置
 Vec3 viewPos(0.0f, 0.0f, 0.0f);         // 观察位置
 
 
@@ -81,22 +81,27 @@ int main()
 		// 监听鼠标和键盘操作
 		//camera.Listen(msg, deltaTime, xOffset, yOffset);
 
-		// 计算mvp矩阵
-		//Sleep(20);
-		//model = Translate(translate) * Rotate(ny, 0.5f) * Translate(-1.0f * translate) * model;
-		//model = Translate(Vec3(0.0f, 0.0f, -0.1f)) * model;
-		Mat4 view = camera.GetViewMatrix();
+		lightPos = Rotate(ny, 0.3f) * Vec4(lightPos, 0.0f);
+
+		// 构造DepthMap
+		Mat4 view = Camera::LookAt(lightPos, translate, Vec3(0.0f, 1.0f, 0.0f));
+		//Mat4 view(1.0f);
 		Mat4 mvp = projection * view * model;
+		screen.ConstructDepthMap(model, mvp, myModel);
 
+		// 正式渲染
+		view = camera.GetViewMatrix();
+		//model = Translate(translate) * Rotate(ny, 0.3f) * Translate(-1.0f * translate) * model;
+		mvp = projection * view * model;
 		viewPos = camera.GetPosition();
-		lightPos = Rotate(ny, 0.5f) * Vec4(lightPos, 1.0f);
+		screen.RenderModel(model, projection, mvp, myModel, lightPos, viewPos, true);
 
-		// 绘制模型
-		screen.RenderModel(model, mvp, myModel, lightPos, viewPos);
 		FlushBatchDraw();
 
 		// 清理zBuffer
 		screen.ClearZ();
+		// 清理depthMap
+		screen.ClearDepth();
 	}
 	
 

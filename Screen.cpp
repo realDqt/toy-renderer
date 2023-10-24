@@ -1,5 +1,6 @@
 #include "Screen.h"
 #include "Global.h"
+#include <assert.h>
 #include <cstring>
 #include <algorithm>
 #include <iostream>
@@ -10,15 +11,18 @@ Screen::Screen(int width, int height, int depth, Color bgColor)
 	this->depth = depth;
 	this->bgColor = bgColor;
 	
-	// 为深度缓冲申请内存
+	// 为zBuffer申请内存
 	zBuffer = new float[width * height];
-	// 初始化深度缓冲为最远值
-	for (int i = 0; i < width * height; ++i)zBuffer[i] = -INF;
+	// 为深度贴图申请内存
+	depthMap = new float[width * height];
+	// 初始化为最远值
+	for (int i = 0; i < width * height; ++i)depthMap[i] = zBuffer[i] = -INF;
 }
 
 Screen::~Screen()
 {
 	delete[] zBuffer;
+	delete[] depthMap;
 }
 
 void Screen::Create()
@@ -37,14 +41,19 @@ void Screen::Close()
 	closegraph();
 }
 
-int Screen::GetWidth()
+int Screen::GetWidth()const
 {
 	return width;
 }
 
-int Screen::GetHeight()
+int Screen::GetHeight()const
 {
 	return height;
+}
+
+float* Screen::GetDepthMap()const
+{
+	return depthMap;
 }
 
 // 获取指定位置的颜色
@@ -103,14 +112,47 @@ void Screen::RasterizeTriangle(Triangle& triangle, Color* pointColors)
 			// 判断是否在屏幕内部
 			if (!InRange(z, -1.0, 1.0f))continue;
 			// 深度测试
-			int idx = (height - y) * width + x;
-			if (zBuffer[idx] < z)continue;
+			int idx = (height - y - 1) * width + x;
+			if (z < zBuffer[idx])continue;
 			// 更新深度缓冲
 			zBuffer[idx] = z;
 			// 插值计算颜色
 			Color color = bary.X() * pointColors[0] + bary.Y() * pointColors[1] + bary.Z() * pointColors[2];
 			// 着色
 			SetPixel(x, y, color);
+		}
+	}
+}
+
+// 光栅化三角形，构造depthMap
+void Screen::RasterizeTriangleDepthMap(Triangle& triangle)
+{
+	// 计算三角形包围盒
+	Vec2 bboxmin(INF, INF);
+	Vec2 bboxmax(-INF, -INF);
+	for (int i = 0; i < 3; ++i) {
+		bboxmin.SetX(std::min(bboxmin.X(), triangle[i].X()));
+		bboxmin.SetY(std::min(bboxmin.Y(), triangle[i].Y()));
+
+		bboxmax.SetX(std::max(bboxmax.X(), triangle[i].X()));
+		bboxmax.SetY(std::max(bboxmax.Y(), triangle[i].Y()));
+	}
+	// 遍历包围盒中的每一个像素
+	for (int x = bboxmin.X(); x <= bboxmax.X(); ++x) {
+		for (int y = bboxmin.Y(); y <= bboxmax.Y(); ++y) {
+			// 计算重心坐标
+			Vec3 bary = triangle.Barycentric(Vec2(x, y));
+			// 判断是否在三角形内部
+			if (!InRange(bary.X(), 0.0f, 1.0f) || !InRange(bary.Y(), 0.0f, 1.0f) || !InRange(bary.Z(), 0.0f, 1.0f))continue;
+			// 插值计算深度
+			float z = bary.X() * triangle[0].Z() + bary.Y() * triangle[1].Z() + bary.Z() * triangle[2].Z();
+			// 判断是否在屏幕内部
+			if (!InRange(z, -1.0, 1.0f))continue;
+			// 深度测试
+			int idx = (height - y - 1) * width + x;
+			if (z < depthMap[idx])continue;
+			// 更新深度缓冲
+			depthMap[idx] = z;
 		}
 	}
 }
@@ -140,7 +182,7 @@ void Screen::RasterizeTriangleMSAA(Triangle& triangle, Color* pointColors)
 	for (int x = bboxmin.X(); x <= bboxmax.X(); ++x) {
 		for (int y = bboxmin.Y(); y <= bboxmax.Y(); ++y) {
 			// 判断是否在屏幕内部
-			if (!InRange(x, 0.0f, width) || !InRange(y, 0.0f, height))continue;
+			if (!InRange(x, 0, width - 1) || !InRange(y, 0, height - 1))continue;
 			// 深度测试
 			// 计算重心坐标
 			Vec3 bary = triangle.Barycentric(Vec2(x, y));
@@ -148,7 +190,8 @@ void Screen::RasterizeTriangleMSAA(Triangle& triangle, Color* pointColors)
 			// 判断是否在屏幕内部
 			if (!InRange(z, -1.0, 1.0f))continue;
 			// 二维坐标转换至一维坐标，注意反转y轴
-			int idx = (height - y) * width + x;
+			int idx = (height - y - 1) * width + x;
+			assert(idx >= 0 && idx < width * height);
 			if (z < zBuffer[idx])continue;
 			// 更新zBuffer
 			zBuffer[idx] = z;
@@ -175,7 +218,7 @@ void Screen::RasterizeTriangleMSAA(Triangle& triangle, Color* pointColors)
 }
 
 // 光栅化三角形，正式进行光照计算
-void Screen::RasterizeTriangle(const Mat4& normalMatrix, Image* diffuseMap, Triangle& triangle, const Vec3& lightPos, const Vec3& viewPos)
+void Screen::RasterizeTriangle(const Mat4& p, const Mat4& normalMatrix, Image* diffuseMap, Triangle& triangle, const Vec3& lightPos, const Vec3& viewPos, bool shadow)
 {
 	//for (int i = 0; i < 3; ++i)std::cout << triangle[i] << std::endl;
 	// 计算三角形包围盒
@@ -188,11 +231,12 @@ void Screen::RasterizeTriangle(const Mat4& normalMatrix, Image* diffuseMap, Tria
 		bboxmax.SetX(std::max(bboxmax.X(), triangle[i].X()));
 		bboxmax.SetY(std::max(bboxmax.Y(), triangle[i].Y()));
 	}
-
-	for (int x = bboxmin.X(); x < bboxmax.X(); ++x) {
-		for (int y = bboxmin.Y(); y < bboxmax.Y(); ++y) {
+	assert(bboxmax.X() > bboxmin.X() && bboxmax.Y() > bboxmin.Y());
+	
+	for (int x = bboxmin.X(); x <= bboxmax.X(); ++x) {
+		for (int y = bboxmin.Y(); y <= bboxmax.Y(); ++y) {
 			// 判断是否在屏幕内部
-			if (!InRange(x, 0.0f, width) || !InRange(y, 0.0f, height))continue;
+			if (!InRange(x, 0, width - 1) || !InRange(y, 0, height - 1))continue;
 			// 计算重心坐标
 			Vec3 bary = triangle.Barycentric(Vec2(x, y));
 			// 判断是否在三角形内部
@@ -202,31 +246,23 @@ void Screen::RasterizeTriangle(const Mat4& normalMatrix, Image* diffuseMap, Tria
 			float z = bary.X() * triangle[0].Z() + bary.Y() * triangle[1].Z() + bary.Z() * triangle[2].Z();
 			// 判断是否在屏幕内部
 			if (!InRange(z, -1.0, 1.0f))continue;
-			int idx = (height - y) * width + x;
+			int idx = (height - y - 1) * width + x;
+			assert(idx >= 0 && idx < width * height);
 			if (z < zBuffer[idx])continue;
 			// 更新zBuffer
 			zBuffer[idx] = z;
 			// 光照计算
-			Color color = BlinPhong(normalMatrix, diffuseMap, triangle, bary, lightPos, viewPos);
+			Color color(0.0f);
+			if (shadow)color = BlinPhongShadow(*this, p, normalMatrix, diffuseMap, triangle, bary, lightPos, viewPos);
+			else color = BlinPhong(normalMatrix, diffuseMap, triangle, bary, lightPos, viewPos);
 			// 着色
 			SetPixel(x, y, color);
 		}
 	}
 }
 
-// 判断三角形是否在屏幕内
-bool Screen::InScreen(Triangle& triangle)
-{
-	for (int i = 0; i < 3; ++i) {
-		if (!InRange(triangle[i][0], 0.0f, width))return false;
-		if (!InRange(triangle[i][1], 0.0f, height))return false;
-		if (!InRange(triangle[i][2], -depth, 0.0f))return false;
-	}
-	return true;
-}
-
 // 绘制模型
-void Screen::RenderModel(const Mat4& m, const Mat4& mvp, Model& model, const Vec3& lightPos, const Vec3& viewPos)
+void Screen::RenderModel(const Mat4& m, const Mat4& p, const Mat4& mvp, Model& model, const Vec3& lightPos, const Vec3& viewPos, bool shadow)
 {
 	int nFaces = model.NumOfFaces();
 	Image* diffuseMap = model.GetDiffuseMap();
@@ -254,10 +290,10 @@ void Screen::RenderModel(const Mat4& m, const Mat4& mvp, Model& model, const Vec
 		triangle.CalcWorldPoints(m);
 		
 		// 坐标变换
-		triangle.Transform(mvp, width, height, depth);
+		triangle.Transform(mvp, width, height);
 
 		// 光栅化
-		RasterizeTriangle(normalMatrix, diffuseMap, triangle, lightPos, viewPos);
+		RasterizeTriangle(p, normalMatrix, diffuseMap, triangle, lightPos, viewPos, shadow);
 
 		// 释放内存
 		delete[] points;
@@ -309,8 +345,54 @@ void Screen::RenderModel(Model& model)
 	}
 }
 
+// 光源视角渲染，构造depthMap
+void Screen::ConstructDepthMap(const Mat4& m, const Mat4& mvp, Model& model)
+{
+	int nFaces = model.NumOfFaces();
+	for (int i = 0; i < nFaces; ++i) {
+		// 构造三角形
+		Vec4* points = new Vec4[3];
+		Vec2* texCoords = new Vec2[3];
+		Vec3* normals = new Vec3[3];
+		for (int j = 0; j < 3; ++j) {
+			Vec3 idx = model.Vertex(i, j);
+			for (int k = 0; k < 3; ++k)points[j][k] = model.Vertex(idx[0])[k];
+			points[j][3] = 1.0f;
+			texCoords[j] = model.TexCoord(idx[1]);
+			normals[j] = model.Normal(idx[2]);
+		}
+		Triangle triangle(points, texCoords, normals);
+		triangle.CalcWorldPoints(m);
+
+		// 坐标变换
+		triangle.Transform(mvp, width, height);
+
+		// 光栅化，构造depthMap
+		RasterizeTriangleDepthMap(triangle);
+
+		// 释放内存
+		delete[] points;
+		delete[] texCoords;
+		delete[] normals;
+	}
+	/*
+	for (int i = 0; i < height; ++i) {
+		for (int j = 0; j < width; ++j) {
+			int idx = i * width + j;
+			if(depthMap[idx] != -INF)std::cout << depthMap[idx] << std::endl;
+		}
+	}
+	*/
+}
+
 // 清理zBuffer
 void Screen::ClearZ()
 {
 	for (int i = 0; i < height * width; ++i)zBuffer[i] = -INF;
+}
+
+// 清理depth
+void Screen::ClearDepth()
+{
+	for (int i = 0; i < height * width; ++i)depthMap[i] = -INF;
 }
